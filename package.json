@@ -8,6 +8,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "johnny-five": "^0.9.49"
+    "johnny-five": "^0.9.49",
+    "lodash.random": "^3.1.5",
+    "lodash.sample": "^4.1.1"
   }
 }
