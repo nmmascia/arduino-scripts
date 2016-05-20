@@ -5,40 +5,49 @@ const sample = require('lodash.sample');
 
 const board = new five.Board();
 
-let lights = 0b11111111;
+const allLights = 0b11111111;
+let lights = allLights;
 
 const pins = {
     0: {
         on: true,
         byte: 0b01111111,
+        selected: false
     },
     1: {
         on: true,
         byte: 0b10111111,
+        selected: false
     },
     2: {
         on: true,
         byte: 0b11011111,
+        selected: false
     },
     3: {
         on: true,
         byte: 0b11101111,
+        selected: true
     },
     4: {
         on: true,
         byte: 0b11110111,
+        selected: false
     },
     5: {
         on: true,
-        byte: 0b11111011
+        byte: 0b11111011,
+        selected: false
     },
     6: {
         on: true,
-        byte: 0b11111101
+        byte: 0b11111101,
+        selected: false
     },
     7: {
         on: true,
-        byte: 0b11111110
+        byte: 0b11111110,
+        selected: false
     },
 };
 
@@ -51,23 +60,40 @@ board.on('ready', function() {
         }
     });
 
+    const piezo = new five.Piezo(7);
+
     register.send(lights);
 
     const interval = setInterval(() => {
         const keys = Object.keys(pins);
         const remaining = keys.filter(k => pins[k].on);
         const rand = sample(remaining);
-        console.log(`Your selected number: ${rand}`);
+        const selected = keys.filter(k => pins[k].selected);
 
-        pins[rand].on = false;
-        lights = lights & pins[rand].byte;
-        register.send(lights);
+        console.log(`Your selected numbers: ${selected}`)
+        console.log(`Your current number: ${rand}`);
 
-        if (keys.every(k => !pins[k].on)) {
-            clearInterval(interval)
-            console.log('Every number has been selected.');
+        if (selected.includes(rand)) {
+            piezo.play({
+              song: 'C - C - C - C - C - C - C - C - C - C',
+              beats: 1,
+              tempo: 100
+            });
+
+            console.log('You win!!!!!!!!!!!!');
+            register.send(allLights);
+            clearInterval(interval);
         } else {
-            console.log('Your remaining numbers are', keys.filter(k => pins[k].on));
+            pins[rand].on = false;
+            lights = lights & pins[rand].byte;
+            register.send(lights);
+
+            if (keys.every(k => !pins[k].on)) {
+                clearInterval(interval)
+                console.log('Every number has been picked.');
+            } else {
+                console.log('Your remaining numbers are', keys.filter(k => pins[k].on));
+            }
         }
     }, 2000);
 
